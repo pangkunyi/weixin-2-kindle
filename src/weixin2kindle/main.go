@@ -34,6 +34,15 @@ func send2kindleHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		for _, article := range articles {
+			ar, err := GetOneWeixinMpArticle(article.AccId, article.Identity)
+			if err != nil {
+				log.Printf("error:%v\n", err)
+				sendErr(w, err)
+				return
+			}
+			if ar != nil {
+				continue
+			}
 			if err = fetchArticle(acc, article); err != nil {
 				log.Printf("error:%v\n", err)
 				continue

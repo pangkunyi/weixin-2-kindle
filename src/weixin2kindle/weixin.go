@@ -23,7 +23,6 @@ func loginWeixinMp(acc *WeixinMpAcc) (openIdExt string, err error) {
 	openIdExt, _, ok := extract(string(content), "openid="+acc.OpenId+"&amp;ext=", "\"")
 	if !ok {
 		err = fmt.Errorf("[%s, %s]cannot get openIdExt", acc.Name, acc.OpenId)
-		fmt.Println(string(content))
 	}
 	return
 }
@@ -51,18 +50,26 @@ func fetchArticles(acc *WeixinMpAcc) (articles []*WeixinMpArticle, err error) {
 		var searchItem WeixinMpArticleSearchResultItem
 		item = strings.Replace(item, `encoding="gbk"`, `encoding="utf-8"`, -1)
 		if err = xml.Unmarshal([]byte(item), &searchItem); err != nil {
-			panic(err)
 			return
 		}
-		fmt.Printf("%#v\n", searchItem)
+		articles = append(articles, &WeixinMpArticle{Url: fmt.Sprintf("%s%s", WEIXIN_MP_DOMAIN_URL, searchItem.Url), Title: searchItem.Title, Identity: searchItem.Title, AccId: acc.Id})
 	}
-	return nil, nil
+	return
 }
 func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
+	content, err := UrlContent(article.Url)
+	if err != nil {
+		return err
+	}
+	c, _, ok := extract(string(content), `<div class="rich_media_content`, `<div class="rich_media_tool`)
+	if !ok {
+		return fmt.Errorf("can not get article content[url:%s]", article.Url)
+	}
+	article.Content = c
 	return nil
 }
 func saveArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
-	return nil
+	return SaveWeixinMpArticle(article.Title, article.AccId, article.Identity, article.Url, article.Content)
 }
 func sendArticle2Kindle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	return nil

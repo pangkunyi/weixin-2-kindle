@@ -5,7 +5,13 @@ import (
 	"golang.org/x/net/html/charset"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"strings"
+)
+
+var (
+	cookieJar, _ = cookiejar.New(nil)
+	httpClient   = &http.Client{Jar: cookieJar}
 )
 
 type WeixinMpAcc struct {
@@ -36,7 +42,7 @@ type WeixinMpArticleSearchResultItem struct {
 }
 
 func UrlContent(url string) (body []byte, err error) {
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return body, err
 	}
