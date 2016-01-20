@@ -1,7 +1,9 @@
 export GOPATH:=$(shell pwd):$(GOPATH)
+export GOBIN:=$(shell pwd)/bin
+
 install:
-	@go install weixin-2-kindle 
+	@go install weixin2kindle
 run:
-	@./bin/kindle-delivery
+	@./bin/weixin2kindle
 stop:
-	@pkill weixin-2-kindle || echo "no kindle-delivery process"
+	@pkill weixin2kindle || echo "no weixin2kindle process"
