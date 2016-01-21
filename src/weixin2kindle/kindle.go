@@ -19,7 +19,7 @@ func send2kindle(dir, html, mobi, locale string, update func() error) error {
 		fmt.Printf("no html file create: %s", filename)
 		return err
 	}
-	err = EncodeImg(filename)
+	//err = EncodeImg(filename)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func send2kindle(dir, html, mobi, locale string, update func() error) error {
 	if err != nil {
 		return err
 	}
-	err = Send(body, mobi)
+	err = SendMail(body, mobi)
 	if err != nil {
 		return err
 	}

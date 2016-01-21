@@ -7,7 +7,7 @@ import (
 	"net/smtp"
 )
 
-func Send(attachment []byte, filename string) error {
+func SendMail(attachment []byte, filename string) error {
 	from := C.MailFrom
 	to := []string{C.MailTo}
 	subject := "convert file " + filename

@@ -56,6 +56,7 @@ func fetchArticles(acc *WeixinMpAcc) (articles []*WeixinMpArticle, err error) {
 	}
 	return
 }
+
 func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	content, err := UrlContent(article.Url)
 	if err != nil {
@@ -65,12 +66,17 @@ func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	if !ok {
 		return fmt.Errorf("can not get article content[url:%s]", article.Url)
 	}
+	c, err = EncodeImg(`<div class="rich_media_content` + c)
+	if err != nil {
+		return err
+	}
 	article.Content = c
 	return nil
 }
 func saveArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	return SaveWeixinMpArticle(article.Title, article.AccId, article.Identity, article.Url, article.Content)
 }
+
 func sendArticle2Kindle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
-	return nil
+	return SendMail([]byte(html(article.Content, article.Title)), article.Title+".html")
 }

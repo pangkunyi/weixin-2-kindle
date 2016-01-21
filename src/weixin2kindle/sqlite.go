@@ -61,7 +61,7 @@ func CloseDb() {
 
 func QueryDb(fn func(*sql.Rows) error, query string, args ...interface{}) (err error) {
 	var rows *sql.Rows
-	if rows, err = db.Query(query); err != nil {
+	if rows, err = db.Query(query, args...); err != nil {
 		return
 	}
 	defer rows.Close()
@@ -111,6 +111,6 @@ func GetOneWeixinMpArticle(accId int, identity string) (article *WeixinMpArticle
 			break
 		}
 		return nil
-	}, WEIXIN_MP_ARTICLE_GET_BY_UDX_SQL)
+	}, WEIXIN_MP_ARTICLE_GET_BY_UDX_SQL, accId, identity)
 	return
 }

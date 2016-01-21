@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,10 +10,18 @@ import (
 func main() {
 	defer destroy()
 	http.HandleFunc("/send2kindle", send2kindleHandler)
+	http.HandleFunc("/mail", mailHandler)
 	err := http.ListenAndServe(C.ServerAddr, nil)
 	if err != nil {
 		panic(err)
 	}
+}
+func mailHandler(w http.ResponseWriter, r *http.Request) {
+	if err := SendMail([]byte(html("中国人", "测试")), "测试.html"); err != nil {
+		sendErr(w, err)
+		return
+	}
+	fmt.Fprintln(w, "ok")
 }
 
 func sendErr(w http.ResponseWriter, err error) {
