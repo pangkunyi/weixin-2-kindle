@@ -14,8 +14,9 @@ func SendMail(attachment []byte, filename string) error {
 
 	msg := message.NewMultipartMessage("mixed", "")
 	att := message.NewBinaryMessage(bytes.NewBuffer(attachment))
-	att.SetHeader("Content-Type", "application/octet-stream; name="+filename)
-	att.SetHeader("Content-Disposition", "attachment; filename="+filename)
+	att.SetHeader("Content-Type", "application/octet-stream; charset=utf-8")
+	fn, _ := utf8ToIso8859_1(filename)
+	att.SetHeader("Content-Disposition", `attachment; filename="`+fn+`"`)
 	msg.AddPart(att)
 	msg.SetHeader("From", from)
 	msg.SetHeader("Subject", subject)
