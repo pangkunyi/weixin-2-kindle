@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"github.com/qiniu/iconv"
 	"golang.org/x/net/html/charset"
 	"io/ioutil"
 	"net/http"
@@ -69,13 +68,4 @@ func extract(content, prefix, subfix string) (string, string, bool) {
 		return "", "", false
 	}
 	return content[:idx], content[idx:], true
-}
-
-func utf8ToIso8859_1(input string) (string, error) {
-	cd, err := iconv.Open("iso8859-1", "utf-8") // convert utf-8 to gbk
-	if err != nil {
-		return "", err
-	}
-	defer cd.Close()
-	return cd.ConvString(input), nil
 }
