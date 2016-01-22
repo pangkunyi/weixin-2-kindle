@@ -37,7 +37,7 @@ func send2kindleHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, acc := range accs {
 		articles, err := fetchArticles(acc)
-		time.Sleep(10 * time.Second)
+		time.Sleep(C.WeixinAccessDuration)
 		if err != nil {
 			log.Printf("error:%v\n", err)
 			continue
@@ -56,7 +56,7 @@ func send2kindleHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("error:%v\n", err)
 				continue
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(C.WeixinAccessDuration)
 			if err = saveArticle(acc, article); err != nil {
 				log.Printf("error:%v\n", err)
 				continue
