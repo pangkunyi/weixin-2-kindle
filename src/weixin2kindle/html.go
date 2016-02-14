@@ -17,6 +17,7 @@ const (
     <title>%s</title>
     </head>
     <body>
+    <h2>%s</h2>
     %s
     </body>
     </html>
@@ -24,7 +25,7 @@ const (
 )
 
 func html(content, title string) string {
-	return fmt.Sprintf(HTML_TPL, title, content)
+	return fmt.Sprintf(HTML_TPL, title, title, content)
 }
 
 func EncodeImg(content string) (ret string, err error) {
