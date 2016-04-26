@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"golang.org/x/net/html/charset"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -31,14 +30,13 @@ type WeixinMpArticle struct {
 }
 
 type WeixinMpArticleSearchResult struct {
-	Items []string `json:"items"`
+	Items []string `json:"list"`
 }
 
 type WeixinMpArticleSearchResultItem struct {
-	XMLName xml.Name `xml:"DOCUMENT"`
-	Title   string   `xml:"item>display>title1"`
-	Url     string   `xml:"item>display>url"`
-	ShowUrl string   `xml:"item>display>showurl"`
+	Title   string `json:"app_msg_ext_info"`
+	Url     string `xml:"item>display>url"`
+	ShowUrl string `xml:"item>display>showurl"`
 }
 
 func UrlContent(url string) (body []byte, err error) {
@@ -52,9 +50,7 @@ func UrlContent(url string) (body []byte, err error) {
 }
 
 func UnmarshalXml(content string, v interface{}) error {
-	d := xml.NewDecoder(strings.NewReader(content))
-	d.CharsetReader = charset.NewReaderLabel
-	return d.Decode(v)
+	return nil
 }
 
 func extract(content, prefix, subfix string) (string, string, bool) {

@@ -8,6 +8,14 @@ import (
 )
 
 func main() {
+	url, er := fetchArticles(&WeixinMpAcc{Name: "WebNotes"})
+	if er != nil {
+		panic(er)
+	}
+	fmt.Println(url)
+	if true {
+		return
+	}
 	defer destroy()
 	http.HandleFunc("/send2kindle", send2kindleHandler)
 	http.HandleFunc("/mail", mailHandler)

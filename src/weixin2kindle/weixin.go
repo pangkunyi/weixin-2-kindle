@@ -4,39 +4,52 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"regexp"
 	"strings"
-	"time"
 )
 
 var (
 	WEIXIN_MP_DOMAIN_URL       = "http://weixin.sogou.com"
 	WEIXIN_MP_LOGIN_URL        = "http://weixin.sogou.com/weixin?type=1&query=%s&ie=utf8&w=01019900&sut=1841&sst0=1453261174135"
 	WEIXIN_MP_ARTICLE_LIST_URL = "http://weixin.sogou.com/gzhjs?openid=%s&ext=%s&page=1&gzhArtKeyWord=&tsn=0&t=%d&_=%d"
+	WEIXIN_MP_LOGIN_PATTERN    = regexp.MustCompile(`(href="http://mp.weixin.qq.com/profile\?[^"]+)|(em_weixinhao">.+</label>)`)
 )
 
-func loginWeixinMp(acc *WeixinMpAcc) (openIdExt string, err error) {
+func loginWeixinMp(acc *WeixinMpAcc) (articleIndexUrl string, err error) {
 	url := fmt.Sprintf(WEIXIN_MP_LOGIN_URL, acc.Name)
 	content, err := UrlContent(url)
 	if err != nil {
-		return openIdExt, err
+		return articleIndexUrl, err
 	}
-	openIdExt, _, ok := extract(string(content), "openid="+acc.OpenId+"&amp;ext=", "\"")
-	if !ok {
-		err = fmt.Errorf("[%s, %s]cannot get openIdExt", acc.Name, acc.OpenId)
+	entries := WEIXIN_MP_LOGIN_PATTERN.FindAllString(string(content), -1)
+	l := len(entries)
+	if l < 2 {
+		return articleIndexUrl, fmt.Errorf("failure to find article index url with acc[%#v]", acc)
 	}
-	return
+	expectNameEntry := `em_weixinhao">` + acc.Name + `</label>`
+	for i := 0; i < l-1; i++ {
+		if strings.HasPrefix(entries[i], `href="`) && entries[i+1] == expectNameEntry {
+			return strings.Replace(entries[i][6:], "&amp;", "&", -1), nil
+		}
+	}
+	return articleIndexUrl, fmt.Errorf("failure to find article index url with acc[%#v]", acc)
 }
 
 func fetchArticles(acc *WeixinMpAcc) (articles []*WeixinMpArticle, err error) {
-	openIdExt, err := loginWeixinMp(acc)
+	url, err := loginWeixinMp(acc)
 	if err != nil {
 		return articles, err
 	}
-	unixTime := time.Now().Unix()
-	url := fmt.Sprintf(WEIXIN_MP_ARTICLE_LIST_URL, acc.OpenId, openIdExt, unixTime, (unixTime - 100))
 	fmt.Println(url)
 	content, err := UrlContent(url)
 	if err != nil {
+		return
+	}
+	c, _, _ := extract(string(content), `var msgList = '`, `seajs.use("sougou/profile.js");`)
+	c = strings.Replace(c, "&quot;", `"`, -1)
+	c = strings.Replace(c, "&amp;", `&`, -1)
+	fmt.Println(c)
+	if true {
 		return
 	}
 	var searchResult WeixinMpArticleSearchResult
