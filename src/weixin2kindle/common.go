@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/xml"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -27,16 +26,21 @@ type WeixinMpArticle struct {
 	Identity string
 	Url      string
 	Content  string
+	Cover    string
 }
 
 type WeixinMpArticleSearchResult struct {
-	Items []string `json:"list"`
+	Items []WeixinMpArticleSearchResultItem `json:"list"`
+}
+
+type WeixinMpArticleSearchResultInfo struct {
+	Title string `json:"title"`
+	Url   string `json:"content_url"`
+	Cover string `json:"cover"`
 }
 
 type WeixinMpArticleSearchResultItem struct {
-	Title   string `json:"app_msg_ext_info"`
-	Url     string `xml:"item>display>url"`
-	ShowUrl string `xml:"item>display>showurl"`
+	Info WeixinMpArticleSearchResultInfo `json:"app_msg_ext_info"`
 }
 
 func UrlContent(url string) (body []byte, err error) {

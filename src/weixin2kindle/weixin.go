@@ -2,14 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"regexp"
 	"strings"
 )
 
 var (
-	WEIXIN_MP_DOMAIN_URL       = "http://weixin.sogou.com"
+	WEIXIN_MP_DOMAIN_URL       = "http://mp.weixin.qq.com"
 	WEIXIN_MP_LOGIN_URL        = "http://weixin.sogou.com/weixin?type=1&query=%s&ie=utf8&w=01019900&sut=1841&sst0=1453261174135"
 	WEIXIN_MP_ARTICLE_LIST_URL = "http://weixin.sogou.com/gzhjs?openid=%s&ext=%s&page=1&gzhArtKeyWord=&tsn=0&t=%d&_=%d"
 	WEIXIN_MP_LOGIN_PATTERN    = regexp.MustCompile(`(href="http://mp.weixin.qq.com/profile\?[^"]+)|(em_weixinhao">.+</label>)`)
@@ -45,29 +44,27 @@ func fetchArticles(acc *WeixinMpAcc) (articles []*WeixinMpArticle, err error) {
 	if err != nil {
 		return
 	}
-	c, _, _ := extract(string(content), `var msgList = '`, `seajs.use("sougou/profile.js");`)
+	c, _, _ := extract(string(content), `var msgList = '`, "';\r\n")
 	c = strings.Replace(c, "&quot;", `"`, -1)
 	c = strings.Replace(c, "&amp;", `&`, -1)
-	fmt.Println(c)
-	if true {
-		return
-	}
 	var searchResult WeixinMpArticleSearchResult
-	if err = json.Unmarshal(content, &searchResult); err != nil {
+	if err = json.Unmarshal([]byte(c), &searchResult); err != nil {
 		return
 	}
 	if len(searchResult.Items) < 1 {
 		return
 	}
 	for _, item := range searchResult.Items {
-		var searchItem WeixinMpArticleSearchResultItem
-		item = strings.Replace(item, `encoding="gbk"`, `encoding="utf-8"`, -1)
-		if err = xml.Unmarshal([]byte(item), &searchItem); err != nil {
-			return
-		}
-		articles = append(articles, &WeixinMpArticle{Url: fmt.Sprintf("%s%s", WEIXIN_MP_DOMAIN_URL, searchItem.Url), Title: searchItem.Title, Identity: searchItem.Title, AccId: acc.Id})
+		info := item.Info
+		articles = append(articles, &WeixinMpArticle{Url: fmt.Sprintf("%s%s", WEIXIN_MP_DOMAIN_URL, escapeHtml(info.Url)), Title: info.Title, Identity: info.Title, AccId: acc.Id, Cover: escapeHtml(info.Cover)})
 	}
 	return
+}
+
+func escapeHtml(s string) string {
+	s = strings.Replace(s, "&amp;", `&`, -1)
+	s = strings.Replace(s, `\/`, `/`, -1)
+	return s
 }
 
 func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
@@ -75,11 +72,11 @@ func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	if err != nil {
 		return err
 	}
-	c, _, ok := extract(string(content), `<div class="rich_media_content`, `<div class="rich_media_tool`)
+	c, _, ok := extract(string(content), `<div class="rich_media_content`, "</div>\r\n")
 	if !ok {
 		return fmt.Errorf("can not get article content[url:%s]", article.Url)
 	}
-	c, err = EncodeImg(`<div class="rich_media_content` + c)
+	c, err = EncodeImg(fmt.Sprintf(`<img src="%s"/><div class="rich_media_content %s`, article.Cover, c))
 	if err != nil {
 		return err
 	}
