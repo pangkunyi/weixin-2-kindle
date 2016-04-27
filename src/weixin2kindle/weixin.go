@@ -84,7 +84,7 @@ func fetchArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
 	return nil
 }
 func saveArticle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
-	return SaveWeixinMpArticle(article.Title, article.AccId, article.Identity, article.Url, article.Content)
+	return SaveWeixinMpArticle(article.Title, article.AccId, article.Identity, article.Url, "") //article.Content)
 }
 
 func sendArticle2Kindle(acc *WeixinMpAcc, article *WeixinMpArticle) error {
